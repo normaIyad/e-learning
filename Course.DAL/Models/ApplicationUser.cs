@@ -17,5 +17,8 @@ namespace Course.DAL.Models
         public string? City { get; set; }
         public string? Country { get; set; }
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public string? PasswordRestCode { get; set; }
+        public DateTime? PasswordRestCodeExpiration { get; set; }
+
     }
 }

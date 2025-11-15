@@ -38,7 +38,7 @@ namespace Course.Pl.Areas.Admin.Controllers
             return category==null ? NotFound() : Ok(category);
         }
 
-        [HttpPost]
+        [HttpPost("AddCatigory")]
         public async Task<IActionResult> Create ([FromBody] CategoryReq categoryReq)
         {
             if (categoryReq==null)

@@ -13,8 +13,6 @@ namespace Course.Bll.Service.Class
     {
         private readonly ICourseMaterialRepo materialRepo;
         private readonly IFileService fileService;
-
-
         public CourseMaterialService (
             IGenralRepositry<CourseMaterial> repository,
             ICourseMaterialRepo materialRepo,
@@ -24,8 +22,6 @@ namespace Course.Bll.Service.Class
             this.materialRepo=materialRepo;
             this.fileService=fileService;
         }
-
-
         public async Task AddCourseMaterialAsync (CourseMaterialReq req, int courseId)
         {
             var material = req.Adapt<CourseMaterial>();
@@ -37,9 +33,6 @@ namespace Course.Bll.Service.Class
             }
             await materialRepo.AddAsync(material);
         }
-
-
-
         public async Task<bool> DeleteAsync (int id)
         {
             var material = await materialRepo.GetByIdAsync(id);
@@ -52,13 +45,11 @@ namespace Course.Bll.Service.Class
             var deleted = await materialRepo.DeleteAsync(material);
             return deleted>0;
         }
-
         public async Task<bool> IsInstrctorCanAddMatirial (int courseId, string instructorId)
         {
             var result = await materialRepo.GetAllAsync(e => e.CourseId==courseId&&e.Course.InstructorId==instructorId);
             return result is not null;
         }
-
         public async Task<bool> UpdateMaterialAsync (int id, CourseMaterialReq req)
         {
             var existingMaterial = await materialRepo.GetByIdAsync(id);
@@ -79,7 +70,6 @@ namespace Course.Bll.Service.Class
             var updated = await materialRepo.UpdateAsync(materialToUpdate);
             return updated>0;
         }
-
         Task<bool> ICourseMaterialService.DeleteAsync (int id)
         {
             throw new NotImplementedException();

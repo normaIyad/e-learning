@@ -21,18 +21,15 @@ namespace Course
         public static async Task Main (string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
             // Database Configuration
             var connection = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<ApplicationDbContext>(c => c.UseSqlServer(connection));
             //add stripe 
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
             StripeConfiguration.ApiKey=builder.Configuration["Stripe:SecretKey"];
-
             // Add services to the container
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
-
             // Repositories
             builder.Services.AddScoped(typeof(IGenralRepositry<>), typeof(GenralRepositry<>));
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
@@ -40,8 +37,11 @@ namespace Course
             builder.Services.AddScoped<IPaymentRepo, PaymentRepo>();
             builder.Services.AddScoped<IEnrollmentsRepo, EnrollmentsRepo>();
             builder.Services.AddScoped<ICourseMaterialRepo, CourseMaterialRepo>();
-
-
+            builder.Services.AddScoped<IExamRepositry, ExamRepositry>();
+            builder.Services.AddScoped<IQuestionRepositry, QuestionRepositry>();
+            builder.Services.AddScoped<IQuestionOptionRepositry, QuestionOptionRepositry>();
+            builder.Services.AddScoped<IStudentAnswersRepo, StudentAnswersRepo>();
+            builder.Services.AddScoped<IExamResultRepo, ExamResultRepo>();
             // Services
             builder.Services.AddScoped(typeof(IGeneralService<,,>), typeof(GeneralService<,,>));
             builder.Services.AddScoped<ICategoryServices, CategoryServices>();
@@ -50,17 +50,20 @@ namespace Course
             builder.Services.AddScoped<IPaymentService, PaymentServices>();
             builder.Services.AddScoped<ICourseMaterialService, CourseMaterialService>();
             builder.Services.AddScoped<IFileService, Bll.Service.GenralIService.FileService>();
+            builder.Services.AddScoped<IExamService, ExamService>();
+            builder.Services.AddScoped<IQuestionService, QuestionService>();
+            builder.Services.AddScoped<IStudentAnswersService, StudentAnswersService>();
+            builder.Services.AddScoped<IExamResultRepo, ExamResultRepo>();
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
+
             // Identity and Seed Data
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
-
             builder.Services.AddScoped<ISeedData, SeedData>();
-
             // JWT Authentication
             var key = builder.Configuration["JWT:Key"];
             var keyBytes = Encoding.UTF8.GetBytes(key);
-
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme=JwtBearerDefaults.AuthenticationScheme;
@@ -78,37 +81,29 @@ namespace Course
                     RoleClaimType="http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
                 };
             });
-
             // Authorization
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("UserRole", policy => policy.RequireRole("User"));
                 options.AddPolicy("AdminRole", policy => policy.RequireRole("Admin"));
             });
-
             var app = builder.Build();
-
             // Seed Data
             using (var scope = app.Services.CreateScope())
             {
                 var value = scope.ServiceProvider.GetRequiredService<ISeedData>();
                 await value.DataSeed();
             }
-
             // Configure Middleware
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
                 app.MapScalarApiReference();
             }
-
             app.UseHttpsRedirection();
-
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllers();
-
             app.Run();
         }
     }
