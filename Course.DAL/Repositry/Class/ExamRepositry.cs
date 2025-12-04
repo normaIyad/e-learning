@@ -19,5 +19,6 @@ namespace Course.DAL.Repositry.Class
                 .FirstOrDefaultAsync(e => e.Id==examId);
         }
 
+
     }
 }

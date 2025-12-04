@@ -10,5 +10,8 @@ namespace Course.DAL.Repositry
         Task<List<ExamResultWithDetails?>> GetAllExamResultsWithDetailsAsync (int examId);
         Task<bool> AddExamResultAsync (ExamResult examResult);
         Task<bool> UpdateExamResultAsync (ExamResult examResult);
+        Task<List<ExamResult>> ExamStatistics (int exsamId);
+
+
     }
 }

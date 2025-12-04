@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Course.Bll\Course.Bll.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\pdf\" />
+  </ItemGroup>
+
 </Project>

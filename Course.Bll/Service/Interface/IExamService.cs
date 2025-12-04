@@ -12,10 +12,6 @@ namespace Course.Bll.Service.Interface
         Task<List<ExamReq>> GetExams (int CourseId);
         Task<bool> DeleteAsync (int id, string InstactorId);
         Task<List<ExamResultWithDetails?>> GetAllResultWithDetailsAsync (string userId, int examId);
-
-
-
-
-
+        Task<ExamStatisticsDto> ExamStatistics (int exsamId, string userId);
     }
 }

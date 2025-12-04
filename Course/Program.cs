@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuestPDF.Infrastructure;
 using Scalar.AspNetCore;
 using Stripe;
 using System.Text;
@@ -21,16 +22,41 @@ namespace Course
         public static async Task Main (string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // --------------------
             // Database Configuration
+            // --------------------
             var connection = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddDbContext<ApplicationDbContext>(c => c.UseSqlServer(connection));
-            //add stripe 
+
+            // Force encryption and trust certificate for hosted SQL Server
+            connection+=";Encrypt=True;TrustServerCertificate=True;";
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(
+                    connection,
+                    sqlOptions => sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 0, // temporarily disable retries to catch real errors
+                        maxRetryDelay: TimeSpan.FromSeconds(0),
+                        errorNumbersToAdd: null
+                    )
+                )
+            );
+
+            // --------------------
+            // Stripe Configuration
+            // --------------------
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
             StripeConfiguration.ApiKey=builder.Configuration["Stripe:SecretKey"];
-            // Add services to the container
+
+            // --------------------
+            // Controllers & API
+            // --------------------
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
+
+            // --------------------
             // Repositories
+            // --------------------
             builder.Services.AddScoped(typeof(IGenralRepositry<>), typeof(GenralRepositry<>));
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
             builder.Services.AddScoped<ICourseRepositry, CourseRepositry>();
@@ -42,7 +68,11 @@ namespace Course
             builder.Services.AddScoped<IQuestionOptionRepositry, QuestionOptionRepositry>();
             builder.Services.AddScoped<IStudentAnswersRepo, StudentAnswersRepo>();
             builder.Services.AddScoped<IExamResultRepo, ExamResultRepo>();
+            builder.Services.AddScoped<IUserRepositry, UserRepositry>();
+
+            // --------------------
             // Services
+            // --------------------
             builder.Services.AddScoped(typeof(IGeneralService<,,>), typeof(GeneralService<,,>));
             builder.Services.AddScoped<ICategoryServices, CategoryServices>();
             builder.Services.AddScoped<ICourseService, CourseService>();
@@ -55,15 +85,28 @@ namespace Course
             builder.Services.AddScoped<IStudentAnswersService, StudentAnswersService>();
             builder.Services.AddScoped<IExamResultRepo, ExamResultRepo>();
             builder.Services.AddTransient<IEmailSender, EmailSender>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<Repoer>();
 
-            // Identity and Seed Data
+            // --------------------
+            // PDF License
+            // --------------------
+            QuestPDF.Settings.License=LicenseType.Community;
+
+            // --------------------
+            // Identity & Seed Data
+            // --------------------
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
             builder.Services.AddScoped<ISeedData, SeedData>();
+
+            // --------------------
             // JWT Authentication
+            // --------------------
             var key = builder.Configuration["JWT:Key"];
             var keyBytes = Encoding.UTF8.GetBytes(key);
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme=JwtBearerDefaults.AuthenticationScheme;
@@ -81,25 +124,59 @@ namespace Course
                     RoleClaimType="http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
                 };
             });
+
+            // --------------------
             // Authorization
+            // --------------------
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("UserRole", policy => policy.RequireRole("User"));
                 options.AddPolicy("AdminRole", policy => policy.RequireRole("Admin"));
             });
+
             var app = builder.Build();
-            // Seed Data
+
+            // --------------------
+            // Apply migrations & seed data
+            // --------------------
             using (var scope = app.Services.CreateScope())
             {
-                var value = scope.ServiceProvider.GetRequiredService<ISeedData>();
-                await value.DataSeed();
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                try
+                {
+                    Console.WriteLine("Checking pending migrations...");
+                    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+                    if (pendingMigrations.Any())
+                    {
+                        Console.WriteLine("Applying migrations...");
+                        await dbContext.Database.MigrateAsync();
+                        Console.WriteLine("Migrations applied successfully.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No pending migrations.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Database migration failed: "+ex);
+                    throw;
+                }
+
+                var seeder = scope.ServiceProvider.GetRequiredService<ISeedData>();
+                await seeder.DataSeed();
             }
-            // Configure Middleware
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-                app.MapScalarApiReference();
-            }
+
+            // --------------------
+            // Middleware
+            // --------------------
+            //if (app.Environment.IsDevelopment()||app.Environment.IsProduction())
+            //{
+            //    app.MapOpenApi();
+            //    app.MapScalarApiReference();
+            //}
+            app.MapOpenApi();                 // enable OpenAPI in all environments
+            app.MapScalarApiReference();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

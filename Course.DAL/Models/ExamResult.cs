@@ -1,4 +1,7 @@
-﻿namespace Course.DAL.Models
+﻿
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Course.DAL.Models
 {
     public class ExamResult : BaseModel
     {
@@ -9,5 +12,7 @@
         public decimal Score { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime DateTaken { get; set; }
+        [NotMapped]
+        public ICollection<Question> ExamQuestions { get; set; }
     }
 }

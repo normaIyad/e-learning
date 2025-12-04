@@ -122,6 +122,7 @@ namespace Course.DAL.Repositry.Class
                 ExamId=res.ExamId,
                 ExamTitle=res.Exam.Title,
                 Score=res.Score,
+                UserName=(await context.Users.FindAsync(res.UserId))?.UserName,
                 DateTaken=res.DateTaken,
                 userId=res.UserId,
                 ExamQuestion=new List<ExsamQustionWithAnsRes>()
@@ -158,6 +159,11 @@ namespace Course.DAL.Repositry.Class
             context.ExamResults.Update(examResult);
             await context.SaveChangesAsync();
             return true;
+        }
+        public async Task<List<ExamResult>> ExamStatistics (int exsamId)
+        {
+            var res = await context.ExamResults.Where(e => e.ExamId==exsamId).Include(e => e.User).Include(e => e.Exam).Include(e => e.Exam.Questions).ThenInclude(q => q.QustionOptions).ToListAsync();
+            return res;
         }
     }
 }

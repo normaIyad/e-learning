@@ -9,5 +9,6 @@ namespace Course.Bll.Service.Interface
         Task<CourseWithMatirialResponce> GetCourseWithMaterialsAsync (int courseId);
         Task<bool> IsUserEnrollToCource (int courseId, string UserId);
 
+
     }
 }

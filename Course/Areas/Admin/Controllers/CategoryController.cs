@@ -8,7 +8,7 @@ namespace Course.Pl.Areas.Admin.Controllers
     [Route("api/[area]/[controller]")]
     [Area("Admin")]
     [ApiController]
-    [Authorize(Roles = "SuperAdmin , Admin")]
+    [Authorize(Roles = "SuperAdmin , Admin ")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryServices _categoryServices;
@@ -23,12 +23,6 @@ namespace Course.Pl.Areas.Admin.Controllers
         {
             var categories = await _categoryServices.GetAllAsync();
             return Ok(categories);
-        }
-        [HttpGet("debug-claims")]
-        public IActionResult DebugClaims ()
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            return Ok(claims);
         }
 
         [HttpGet("{id}")]
