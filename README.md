@@ -120,7 +120,7 @@ Explore the live API endpoints here:<br />
 
 <h3>1️⃣ Clone the repository</h3>
 <pre style="background: #f4f4f4; padding: 12px; border-radius: 6px;">
-git clone https://github.com/your-repo/project-name.git
+git clone https://github.com/normaIyad/e-learning
 </pre>
 
 <h3>2️⃣ Update <code>appsettings.json</code></h3>
@@ -137,7 +137,7 @@ dotnet run
 </pre>
 
 <p>
-API default URL: <code>https://localhost:xxxx/</code>
+API default URL: <code>https://localhost:7026/scalar/v1</code>
 </p>
 
 <hr />
