@@ -21,9 +21,15 @@ namespace Course.DAL.Repositry.Class
 
         public async Task<bool> IsInstructorOfQuestionAsync (int questionId, string instructorId)
         {
-           var IsAuthorized = await _context.Questions
-                .AnyAsync(q => q.Id==questionId && q.Exam.Course.InstructorId==instructorId);
+            var IsAuthorized = await _context.Questions
+                 .AnyAsync(q => q.Id==questionId&&q.Exam.Course.InstructorId==instructorId);
             return IsAuthorized;
+        }
+        public async Task<bool> AddManyQustions (List<Question> questions)
+        {
+            await _context.Questions.AddRangeAsync(questions);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

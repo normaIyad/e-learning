@@ -125,6 +125,24 @@ namespace Course.Pl.Areas.Admin.Controllers
                 ? Ok("Question option added successfully")
                 : StatusCode(StatusCodes.Status500InternalServerError, "Error adding question option");
         }
+        [HttpPost("AddQuestions/{examId}")]
+        public async Task<IActionResult> AddQuestions (int examId, [FromBody] List<QuestionReq> questionReqs)
+        {
+            //   public async Task<bool> AddManyQuestions (List<QuestionReq> questionReqs, int examId, string userId)
+            if (questionReqs==null||!questionReqs.Any())
+                return BadRequest("Questions data is required.");
+
+            var userId = User.FindFirst("Id").Value;
+            var results = new List<bool>();
+
+            var addMayQustion = await questionService.AddManyQuestions(questionReqs, examId, userId);
+
+            if (addMayQustion)
+                return Ok("All questions added successfully.");
+
+            return StatusCode(StatusCodes.Status500InternalServerError, "Some questions failed to add.");
+        }
+
 
         [HttpPut("UpdateQuestionOption/{id}")]
         public async Task<IActionResult> UpdateQuestionOption (int id, [FromBody] QuestionOptionReq questionOptionReq)

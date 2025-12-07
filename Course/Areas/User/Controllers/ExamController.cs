@@ -30,6 +30,11 @@ namespace Course.Pl.Areas.User.Controllers
         [HttpGet("ExamDetails/{examId}")]
         public async Task<IActionResult> GetExamDetails (int examId)
         {
+            var userId = User.Claims.FirstOrDefault(c => c.Type=="Id")?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in claims.");
+            }
             var exam = await service.GetByIdAsync(examId);
             return exam==null ? NotFound() : Ok(exam);
         }

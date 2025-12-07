@@ -5,6 +5,7 @@
         Video,
         Document,
         Audio,
+        Image,
         Other
     }
     public class CourseMaterial : BaseModel

@@ -16,5 +16,6 @@ namespace Course.DAL.DTO.request
         public IFormFile? MaterialUrl { get; set; }
         [Required]
         public MaterialType MaterialType { get; set; } // e.g., "Video", "Document", etc.
+
     }
 }

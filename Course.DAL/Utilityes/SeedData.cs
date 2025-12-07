@@ -45,13 +45,13 @@ namespace Course.DAL.Utilityes
         {
             await context.Categories.AddRangeAsync(new List<Category>
             {
-                new Category { Name = "Programming", Description = "Courses related to programming languages and software development.", ImgeUrl = "Programming.png" },
-                new Category {Name = "Scince", Description = "Courses covering various scientific disciplines." , ImgeUrl = "Scince.png" },
+                new Category { Name = "Programming", Description = "Courses related to programming languages and software development.", ImgeUrl = "Programming.jpg" },
+                new Category {Name = "Scince", Description = "Courses covering various scientific disciplines." , ImgeUrl = "Scince.jpg" },
                 new Category {Name = "Mathematics", Description = "Courses focused on mathematical concepts and applications.", ImgeUrl = "Mathematics.png" },
-                new Category {Name = "Arts", Description = "Courses exploring various forms of art and creativity.", ImgeUrl = "Arts.png" },
-                new Category {Name = "History", Description = "Courses delving into historical events and periods." , ImgeUrl = "History.png" },
-                new Category {Name = "Languages", Description = "Courses for learning new languages and improving language skills." , ImgeUrl = "Languages.png" },
-                new Category {Name = "Business", Description = "Courses on business management, entrepreneurship, and finance.", ImgeUrl = "Business.png" }
+                new Category {Name = "Arts", Description = "Courses exploring various forms of art and creativity.", ImgeUrl = "Arts.jpg" },
+                new Category {Name = "History", Description = "Courses delving into historical events and periods." , ImgeUrl = "History.jpg" },
+                new Category {Name = "Languages", Description = "Courses for learning new languages and improving language skills." , ImgeUrl = "Languages.jpg" },
+                new Category {Name = "Business", Description = "Courses on business management, entrepreneurship, and finance.", ImgeUrl = "Business.jpg" }
            });
         }
 
@@ -69,7 +69,7 @@ namespace Course.DAL.Utilityes
                     Price = 49.99m,
                     CategoryId = categories.First(c => c.Name == "Programming").Id,
                     InstructorId = instructor.Id,
-                    ImgeUrl= "Course.png"
+                    ImgeUrl= "Course.jpg"
                 },
                 new Course.DAL.Models.Course
                 {
@@ -78,7 +78,7 @@ namespace Course.DAL.Utilityes
                     Price = 39.99m,
                     CategoryId = categories.First(c=> c.Name == "Scince").Id,
                     InstructorId = instructor.Id,
-                    ImgeUrl = "Course.png"
+                    ImgeUrl = "Course.jpg"
                 },
                 new Course.DAL.Models.Course
                 {
@@ -87,7 +87,7 @@ namespace Course.DAL.Utilityes
                     Price = 59.99m,
                     CategoryId = categories.First(c=> c.Name == "Mathematics").Id,
                    InstructorId = instructor.Id,
-                   ImgeUrl = "Course.png"
+                   ImgeUrl = "Course.jpg"
                 },
                 new Course.DAL.Models.Course
                 {
@@ -96,7 +96,7 @@ namespace Course.DAL.Utilityes
                     Price = 29.99m,
                      CategoryId = categories.First(c=> c.Name == "Arts").Id,
                      InstructorId = instructor.Id,
-                      ImgeUrl = "Course.png"
+                      ImgeUrl = "Course.jpg"
                 },
                 new Course.DAL.Models.Course
                 {
@@ -105,7 +105,7 @@ namespace Course.DAL.Utilityes
                     Price = 44.99m,
                     CategoryId = categories.First(c=> c.Name == "History").Id,
                     InstructorId= instructor.Id,
-                    ImgeUrl = "Course.png"
+                    ImgeUrl = "Course.jpg"
                 },
                 new Course.DAL.Models.Course
                 {
@@ -114,7 +114,7 @@ namespace Course.DAL.Utilityes
                     Price = 34.99m,
                      CategoryId = categories.First(c=> c.Name == "Languages").Id,
                     InstructorId = instructor.Id,
-                    ImgeUrl = "Course.png"
+                    ImgeUrl = "Course.jpg"
                 },
                 new Course.DAL.Models.Course
                 {
@@ -123,7 +123,7 @@ namespace Course.DAL.Utilityes
                     Price = 54.99m,
                     CategoryId = categories.First(c=> c.Name == "Business").Id,
                     InstructorId = instructor.Id,
-                    ImgeUrl = "Course.png"
+                    ImgeUrl = "Course.jpg"
                 }
             });
         }

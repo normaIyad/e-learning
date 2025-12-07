@@ -24,62 +24,64 @@ namespace Course.Pl.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Get ()
         {
-            var courses = await service.GetAllAsync();
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var courses = await service.GetAllCourses(url);
             return Ok(courses);
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> Get (int id)
         {
-            var course = await service.GetByIdAsync(id);
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var course = await service.GetById(id, url);
             return course==null ? NotFound() : Ok(course);
         }
         [HttpPost]
-        public async Task<IActionResult> Create ([FromBody] CourseReq course)
+        public async Task<IActionResult> Create ([FromForm] CourseReq course)
         {
             if (course==null)
                 return BadRequest("Course data is required.");
 
-            await service.AddAsync(course);
+            await service.addCourse(course);
             return Ok("Course added successfully");
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update (int id, [FromBody] CourseReq course)
+        public async Task<IActionResult> Update (int id, [FromForm] CourseReq course)
         {
             if (course==null) return BadRequest();
             var existingCourse = await service.GetByIdAsync(id);
             if (existingCourse==null) return NotFound();
-            await service.UpdateAsync(id, course);
+            await service.updateCourse(id, course);
             return NoContent();
         }
         [HttpDelete("{id}")]
+
         public async Task<IActionResult> Delete (int id)
         {
-            var course = await service.DeleteAsync(id);
+            var course = await service.removeCourse(id);
             return NoContent();
         }
         [HttpGet("{id}/CourseMaterials")]
         public async Task<IActionResult> GetCourseMaterials (int id)
         {
-            var materials = await service.GetCourseWithMaterialsAsync(id);
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var materials = await service.GetCourseWithMaterialsAsync(id, url);
             return Ok(materials);
         }
         [HttpPost("{id}/CourseMaterial")]
         public async Task<IActionResult> AddCourseMaterial ([FromForm] CourseMaterialReq req, int id)
         {
             var instructorId = User.FindFirstValue("Id");
-            var isInstracter = await materialService.IsInstrctorCanAddMatirial(id, instructorId);
-            if (!isInstracter)
-            {
-                return Forbid("You are not authorized to add material to this course.");
-            }
-            if (req==null)
-            {
-                return BadRequest("Course material data is required.");
-            }
+            var isInstructor = await materialService.IsInstrctorCanAddMatirial(id, instructorId);
+            if (!isInstructor) return Forbid("You are not authorized to add material.");
+
+            if (req==null||req.MaterialUrl==null)
+                return BadRequest("Course material file is required.");
+
             await materialService.AddCourseMaterialAsync(req, id);
             return Ok("Course material added successfully.");
         }
         [HttpDelete("{id}/CourseMaterial")]
+        [Authorize(Roles = "Instructor")]
         public async Task<IActionResult> DeleteCourseMaterial (int id)
         {
             var userId = User.FindFirstValue("Id");
@@ -92,20 +94,19 @@ namespace Course.Pl.Areas.Admin.Controllers
             return !result ? NotFound("Course material not found.") : Ok("Course material deleted successfully.");
         }
         [HttpPut("{id}/CourseMaterial")]
-        public async Task<IActionResult> UpdateCourseMaterial (int id, [FromForm] CourseMaterialReq req)
+        [Authorize(Roles = "Instructor")]
+        public async Task<IActionResult> UpdateCourseMaterial (int id, [FromQuery] int courseMaterialId, [FromForm] CourseMaterialReq req)
         {
             var userId = User.FindFirstValue("Id");
-            var isInstracter = await materialService.IsInstrctorCanAddMatirial(id, userId);
-            if (!isInstracter)
-            {
-                return Forbid("You are not authorized to update material for this course.");
-            }
-            if (req==null)
-            {
-                return BadRequest("Course material data is required.");
-            }
-            var result = await materialService.UpdateMaterialAsync(id, req);
+            var isInstructor = await materialService.IsInstrctorCanAddMatirial(id, userId);
+            if (!isInstructor) return Forbid("You are not authorized to update this material.");
+
+            if (req==null) return BadRequest("Course material data is required.");
+
+            var result = await materialService.UpdateMaterialAsync(courseMaterialId, req);
             return !result ? NotFound("Course material not found.") : Ok("Course material updated successfully.");
         }
+
+
     }
 }

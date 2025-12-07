@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace Course.DAL.DTO.request
 {
@@ -24,5 +25,7 @@ namespace Course.DAL.DTO.request
         [Required]
         [MaxLength(50)]
         public string InstructorId { get; set; }
+        [Required]
+        public IFormFile ImgeUrl { get; set; }
     }
 }

@@ -88,6 +88,7 @@ namespace Course
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<Repoer>();
 
+            //MapsterConfig.RegisterMappings();
             // --------------------
             // PDF License
             // --------------------
@@ -135,6 +136,26 @@ namespace Course
             });
 
             var app = builder.Build();
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    context.Response.StatusCode=500;
+                    context.Response.ContentType="application/json";
+
+                    var exceptionHandler = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+
+                    if (exceptionHandler!=null)
+                    {
+                        var result = new
+                        {
+                            error = exceptionHandler.Error.Message
+                        };
+
+                        await context.Response.WriteAsJsonAsync(result);
+                    }
+                });
+            });
 
             // --------------------
             // Apply migrations & seed data
@@ -166,15 +187,19 @@ namespace Course
                 var seeder = scope.ServiceProvider.GetRequiredService<ISeedData>();
                 await seeder.DataSeed();
             }
+            app.UseStaticFiles();
 
             // --------------------
             // Middleware
             // --------------------
+
             //if (app.Environment.IsDevelopment()||app.Environment.IsProduction())
             //{
             //    app.MapOpenApi();
             //    app.MapScalarApiReference();
             //}
+
+
             app.MapOpenApi();                 // enable OpenAPI in all environments
             app.MapScalarApiReference();
             app.UseHttpsRedirection();

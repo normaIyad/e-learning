@@ -14,7 +14,6 @@ namespace Course.DAL.DTO.request
         [Range(0, 100)]
         public decimal Points { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        [Required]
         public QustionType QustionType { get; set; }
         public List<QuestionOptionReq>? QustionOptions { get; set; }
     }

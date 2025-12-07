@@ -10,7 +10,7 @@
         public int CategoryId { get; set; }
         public bool IsActive { get; set; } = true;
         public string InstructorId { get; set; }
-        public string ImgeUrl { get; set; }
+        public string FileUrl { get; set; }
         public ICollection<CourseMaterialRes> CourseMaterials { get; set; }
         //  public ICollection<Exam> Exams { get; set; }
 

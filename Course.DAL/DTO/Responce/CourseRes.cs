@@ -10,5 +10,7 @@
         public int CategoryId { get; set; }
         public bool IsActive { get; set; }
         public string InstructorId { get; set; }
-    }
+        public string InstructorName { get; set; }
+        public string ImgeUrl { get; set; }
+        }
 }

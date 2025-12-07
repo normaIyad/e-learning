@@ -19,6 +19,13 @@ namespace Course.DAL.Repositry.Class
                 .FirstOrDefaultAsync(e => e.Id==examId);
         }
 
+        public async Task<decimal> GetTotalExsamResult (int examId)
+        {
+            var totalPoints = await context.Questions
+                .Where(q => q.ExamId==examId)
+                .SumAsync(q => (decimal)q.Points);
 
+            return totalPoints;
+        }
     }
 }

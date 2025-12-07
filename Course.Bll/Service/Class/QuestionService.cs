@@ -76,6 +76,22 @@ namespace Course.Bll.Service.Class
             return true;
 
         }
+        public async Task<bool> AddManyQuestions (List<QuestionReq> questionReqs, int examId, string userId)
+        {
+            var isAuthorized = await _examRepo.GetAllAsync(e => e.Id==examId&&e.Course.InstructorId==userId);
+            if (isAuthorized==null||!isAuthorized.Any())
+                throw new UnauthorizedAccessException("You are not authorized to add questions to this exam.");
+            var exsistExsam = await _examRepo.GetByIdAsync(examId);
+            if (exsistExsam==null)
+                throw new Exception("Exam not found");
+            var questions = questionReqs.Adapt<List<Question>>();
+            foreach (var question in questions)
+            {
+                question.ExamId=examId;
+            }
+            await _questionRepo.AddManyQustions(questions);
+            return true;
+        }
 
         public async Task<bool> AddQuestionOption (QuestionOptionReq questionOptionReq, int questionId, string userId)
         {
@@ -153,27 +169,31 @@ namespace Course.Bll.Service.Class
 
             return result;
         }
-        public async Task<ExamAndQuestionsRes> ExamQuestions (int examId, string userID)
+        public async Task<List<QuestionRes>> ExamQuestions (int examId, string userId)
         {
-            var authorized = await _questionRepo.GetAllAsync(q =>
-                q.ExamId==examId&&q.Exam.Course.Enrollments.Any(e => e.UserId==userID));
-            if (authorized==null||!authorized.Any())
-                throw new UnauthorizedAccessException("You are not authorized to view questions for this exam.");
             var questions = await _questionRepo.GetAllAsync(q => q.ExamId==examId);
             if (questions==null||!questions.Any())
                 throw new Exception("No questions found for the given exam ID");
             var questionIds = questions.Select(q => q.Id).ToList();
             var options = await _optionRepo.GetAllAsync(o => questionIds.Contains(o.QuestionId));
-            ExamAndQuestionsRes examAndQuestionsRes = new ExamAndQuestionsRes();
-            examAndQuestionsRes.Questions=questions.Adapt<List<ExamQuestionRes>>();
-            examAndQuestionsRes.Id=examId;
-            foreach (var question in examAndQuestionsRes.Questions)
+            var result = questions.Adapt<List<QuestionRes>>();
+            foreach (var question in result)
             {
-                question.QustionOptions=(ICollection<QuestionOptionExamRes>)options
-                    .Where(o => o.QuestionId==question.Id)
-                    .Adapt<List<QuestionOptionRes>>();
+                if (options==null||!options.Any())
+                    continue;
+                question.QustionOptions=options
+              .Where(o => o.QuestionId==question.Id)
+              .Select(o => new QuestionOptionRes
+              {
+                  Id=o.Id,
+                  OptionText=o.OptionText,
+                  IsCorrect=false // Hide correct answer
+              })
+              .ToList();
+
             }
-            return examAndQuestionsRes;
+
+            return result;
         }
         public async Task<QuestionRes> GetQuestion (int id)
         {

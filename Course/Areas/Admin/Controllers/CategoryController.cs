@@ -21,28 +21,30 @@ namespace Course.Pl.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll ()
         {
-            var categories = await _categoryServices.GetAllAsync();
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var categories = await _categoryServices.GetAllWithCoursesAsync(url);
             return Ok(categories);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById (int id)
         {
-            var category = await _categoryServices.GetByIdAsync(id);
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var category = await _categoryServices.GetByIdWithCatigoryAsync(id, url);
             return category==null ? NotFound() : Ok(category);
         }
 
         [HttpPost("AddCatigory")]
-        public async Task<IActionResult> Create ([FromBody] CategoryReq categoryReq)
+        public async Task<IActionResult> Create ([FromForm] CategoryReq categoryReq)
         {
             if (categoryReq==null)
                 return BadRequest("Category data is required.");
-            await _categoryServices.AddAsync(categoryReq);
+            await _categoryServices.AddCategoryAsync(categoryReq);
             return Ok("Category add ");
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update (int id, [FromBody] CategoryReq categoryReq)
+        public async Task<IActionResult> Update (int id, [FromForm] CategoryReq categoryReq)
         {
             if (categoryReq==null) return BadRequest();
 

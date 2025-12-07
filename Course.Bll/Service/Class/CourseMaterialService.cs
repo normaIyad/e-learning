@@ -26,13 +26,16 @@ namespace Course.Bll.Service.Class
         {
             var material = req.Adapt<CourseMaterial>();
             material.CourseId=courseId;
+
             if (req.MaterialUrl!=null)
             {
                 var uploadedFileName = await fileService.UploadFileAsync(req.MaterialUrl, "CourseMaterials");
-                material.MaterialUrl=uploadedFileName;
+                material.MaterialUrl=$"/CourseMaterials/{uploadedFileName}"; // save full URL path
             }
+
             await materialRepo.AddAsync(material);
         }
+
         public async Task<bool> DeleteAsync (int id)
         {
             var material = await materialRepo.GetByIdAsync(id);
@@ -48,31 +51,43 @@ namespace Course.Bll.Service.Class
         public async Task<bool> IsInstrctorCanAddMatirial (int courseId, string instructorId)
         {
             var result = await materialRepo.GetAllAsync(e => e.CourseId==courseId&&e.Course.InstructorId==instructorId);
-            return result is not null;
+            return result.Any();
         }
+
         public async Task<bool> UpdateMaterialAsync (int id, CourseMaterialReq req)
         {
             var existingMaterial = await materialRepo.GetByIdAsync(id);
-            if (existingMaterial==null)
-                return false;
+            if (existingMaterial==null) return false;
+
             string newFile = existingMaterial.MaterialUrl;
+
             if (req.MaterialUrl!=null)
             {
-                newFile=await fileService.UploadFileAsync(req.MaterialUrl, "CourseMaterials");
+                var uploadedFileName = await fileService.UploadFileAsync(req.MaterialUrl, "CourseMaterials");
+                newFile=uploadedFileName;
+
                 if (!string.IsNullOrEmpty(existingMaterial.MaterialUrl))
                 {
-                    await fileService.DeleteFileAsync(existingMaterial.MaterialUrl, "CourseMaterials");
+                    var oldFileName = Path.GetFileName(existingMaterial.MaterialUrl);
+                    await fileService.DeleteFileAsync(oldFileName, "CourseMaterials");
                 }
             }
-            var materialToUpdate = req.Adapt<CourseMaterial>();
-            materialToUpdate.Id=id;
-            materialToUpdate.MaterialUrl=newFile;
-            var updated = await materialRepo.UpdateAsync(materialToUpdate);
+
+            req.Adapt(existingMaterial);
+
+            existingMaterial.MaterialUrl=newFile;
+
+            var updated = await materialRepo.UpdateAsync(existingMaterial);
             return updated>0;
         }
-        Task<bool> ICourseMaterialService.DeleteAsync (int id)
+
+        async Task<bool> ICourseMaterialService.DeleteAsync (int id)
         {
-            throw new NotImplementedException();
+            var material = await materialRepo.GetByIdAsync(id);
+            if (material==null)
+                return false;
+            await materialRepo.DeleteAsync(material);
+            return true;
         }
     }
 }

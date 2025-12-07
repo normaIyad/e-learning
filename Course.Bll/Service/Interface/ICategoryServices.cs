@@ -7,11 +7,12 @@ namespace Course.Bll.Service.Interface
 {
     public interface ICategoryServices : IGeneralService<CategoryReq, CategoryRes, Category>
     {
-        //Task GetByIdWithCoursesAsync (int id);
+        Task<IEnumerable<CategoryRes>> GetAllWithCoursesAsync (string url);
 
-        //Task<IEnumerable<CategoryRes>> GetAllWithCoursesAsync ();
         //Task<CategoryRes> GetByIdWithCoursesAsync (int id);
-        //Task<int> AddCategoryAsync (CategoryReq categoryReq);
-        // Task UpdateAsync (Category category);
+        Task<CategoryRes> GetByIdWithCatigoryAsync (int id, string url);
+
+        Task<int> AddCategoryAsync (CategoryReq categoryReq);
+        Task UpdateAsync (int id, CategoryReq category);
     }
 }

@@ -6,5 +6,10 @@ namespace Course.DAL.Repositry
     {
         Task<Question?> GetQuestionWithOptionsAsync (int id);
         Task<bool> IsInstructorOfQuestionAsync (int questionId, string instructorId);
+        Task<bool> AddManyQustions (List<Question> questions);
+
+
+
+
     }
 }

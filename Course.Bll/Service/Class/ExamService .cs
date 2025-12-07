@@ -5,7 +5,6 @@ using Course.DAL.DTO.Responce;
 using Course.DAL.Models;
 using Course.DAL.Repositry;
 using Mapster;
-using System.Linq;
 
 namespace Course.Bll.Service.Class
 {
@@ -71,10 +70,7 @@ namespace Course.Bll.Service.Class
         public async Task<List<ExamReq>> GetExams (int courseId)
         {
             var exams = await _examRepositry.GetAllAsync(e => e.CourseId==courseId);
-            if (exams==null||!exams.Any())
-                throw new Exception("No Exams Found for the Given Course ID");
-
-            return exams.Adapt<List<ExamReq>>();
+            return exams==null||!exams.Any() ? throw new Exception("No Exams Found for the Given Course ID") : exams.Adapt<List<ExamReq>>();
         }
 
         public async Task<List<ExamResultReq>> GetExamsWithResults (int courseId, int examId, string userId)
@@ -100,17 +96,15 @@ namespace Course.Bll.Service.Class
         public async Task<ExamReq> GetByIdAsync (int id)
         {
             var exam = await _examRepositry.GetByIdAsync(id);
-            if (exam==null) throw new Exception("Exam Not Found");
-            return exam.Adapt<ExamReq>();
+            return exam==null ? throw new Exception("Exam Not Found") : exam.Adapt<ExamReq>();
         }
 
         public async Task<List<ExamResultWithDetails?>> GetAllResultWithDetailsAsync (string userId, int examId)
         {
             var authorizedInstructor = await _courseRepositry.GetAllAsync(c => c.InstructorId==userId);
-            if (authorizedInstructor==null||!authorizedInstructor.Any())
-                throw new Exception("You are not authorized to view exam results");
-
-            return await _examResult.GetAllExamResultsWithDetailsAsync(examId);
+            return authorizedInstructor==null||!authorizedInstructor.Any()
+                ? throw new Exception("You are not authorized to view exam results")
+                : await _examResult.GetAllExamResultsWithDetailsAsync(examId);
         }
 
         public async Task<ExamStatisticsDto> ExamStatistics (int examId, string userId)

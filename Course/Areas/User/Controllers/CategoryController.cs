@@ -20,20 +20,15 @@ namespace Course.Pl.Areas.User.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll ()
         {
-            var categories = await _categoryServices.GetAllAsync();
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var categories = await _categoryServices.GetAllWithCoursesAsync(url);
             return Ok(categories);
         }
-        [HttpGet("debug-claims")]
-        public IActionResult DebugClaims ()
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            return Ok(claims);
-        }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById (int id)
         {
-            var category = await _categoryServices.GetByIdAsync(id);
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var category = await _categoryServices.GetByIdWithCatigoryAsync(id, url);
             return category==null ? NotFound() : Ok(category);
         }
     }

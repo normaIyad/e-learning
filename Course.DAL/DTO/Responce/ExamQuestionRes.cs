@@ -6,12 +6,11 @@ namespace Course.DAL.DTO.Responce
     public class ExamQuestionRes
     {
         public int Id { get; set; }
-        public string QustionText { get; set; }
+        public string QuestionText { get; set; }
         public decimal Points { get; set; }
         [JsonIgnore]
-        public QustionType QustionTyp { get; set; }
-        public string QustionType => QustionTyp.ToString();
-        public ICollection<QuestionOptionExamRes> QustionOptions { get; set; }
-
+        public QustionType QuestionType { get; set; }
+        public string QuestionTypeString => QuestionType.ToString();
+        public ICollection<QuestionOptionExamRes>? QuestionOptions { get; set; }
     }
 }

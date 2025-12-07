@@ -38,6 +38,7 @@ namespace Course.Bll.Service.Class
                 throw new Exception("You are not authorized to submit answers for this exam.");
             if (req.Answers==null||!req.Answers.Any())
                 throw new Exception("Answers cannot be empty.");
+
             var existingAnswers = await _answersRepo.GetAllAsync(a =>
                 a.Question.ExamId==examId&&a.userId==userId);
             if (existingAnswers.Any())
@@ -50,11 +51,15 @@ namespace Course.Bll.Service.Class
                 var question = await _questionRepo.GetQuestionWithOptionsAsync(answer.QuestionId);
                 if (question==null||question.ExamId!=examId)
                     throw new Exception($"Invalid question ID {answer.QuestionId}.");
+                if (studentAnswers.Any(sa => sa.QuestionId==answer.QuestionId))
+                    throw new Exception($"Duplicate answer for question ID {answer.QuestionId}.");
+
                 var studentAnswer = new StudentAnswers
                 {
                     QuestionId=answer.QuestionId,
                     userId=userId,
                 };
+
                 if (question.QustionType==QustionType.MultipleChoice||question.QustionType==QustionType.TrueFalse)
                 {
                     if (!answer.QuestionOptionId.HasValue)
@@ -73,7 +78,10 @@ namespace Course.Bll.Service.Class
                 {
                     if (string.IsNullOrWhiteSpace(answer.AnswerText))
                         throw new Exception($"Question {answer.QuestionId} requires an answer text.");
-
+                    if (answer.AnswerText.Length>1000)
+                        throw new Exception($"Answer text for question {answer.QuestionId} exceeds the maximum length of 1000 characters.");
+                    if (QustionType.ShortAnswer!=question.QustionType)
+                        throw new Exception($"Question {answer.QuestionId} is not a short answer question.");
                     studentAnswer.AnswerText=answer.AnswerText;
                     studentAnswer.IsCorrect=false;
                     studentAnswer.PointsEarned=0;
@@ -92,10 +100,11 @@ namespace Course.Bll.Service.Class
         }
 
 
-        public async Task<decimal> GetResultAsync (int examId, string studentId)
+        public async Task<string> GetResultAsync (int examId, string studentId)
         {
             var IfThereRes = await examResult.GetAllAsync(er =>
                 er.ExamId==examId&&er.UserId==studentId);
+            var totalExsamResult = await _examRepo.GetTotalExsamResult(examId);
             if (!IfThereRes.Any())
             {
                 var exsam = await _examRepo.GetByIdAsync(examId);
@@ -116,10 +125,10 @@ namespace Course.Bll.Service.Class
                     DateTaken=DateTime.UtcNow
                 };
                 var addRes = await examResult.AddExamResultAsync(examResults);
-                return totalScore;
+                return $"{totalScore} / {totalExsamResult}";
             }
             var getResult = await examResult.GetExamResultAsync(examId, studentId);
-            return getResult==null ? throw new Exception("No answers found for this exam.") : getResult.Score;
+            return getResult!=null ? $"{getResult.Score} / {totalExsamResult}" : throw new Exception("No answers found for this exam.");
         }
         public async Task<ExamResultWithDetails?> GetResultWithDetailsAsync (int examId, string studentId)
         {

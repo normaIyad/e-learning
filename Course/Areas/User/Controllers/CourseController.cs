@@ -20,13 +20,15 @@ namespace Course.Pl.Areas.User.Controllers
         [HttpGet("Courses")]
         public async Task<IActionResult> Get ()
         {
-            var courses = await service.GetAllAsync();
+            var url = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/";
+            var courses = await service.GetAllCourses(url);
             return Ok(courses);
         }
         [HttpGet("Course/{id}")]
         public async Task<IActionResult> Get (int id)
         {
-            var course = await service.GetByIdAsync(id);
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var course = await service.GetById(id, url);
             return course==null ? NotFound() : Ok(course);
         }
         [Authorize(Roles = "User")]
@@ -36,9 +38,10 @@ namespace Course.Pl.Areas.User.Controllers
             var userId = User.FindFirstValue("Id");
             var isEnrolled = await service.IsUserEnrollToCource(id, userId);
             if (!isEnrolled)
-                return RedirectToAction(nameof(Get), new { id });
+                return BadRequest("You are not enrolled in this course.");
 
-            var courseWithMaterials = await service.GetCourseWithMaterialsAsync(id);
+            var url = $"{Request.Scheme}://{Request.Host}/";
+            var courseWithMaterials = await service.GetCourseWithMaterialsAsync(id, url);
             return courseWithMaterials==null ? NotFound() : Ok(courseWithMaterials);
         }
     }
